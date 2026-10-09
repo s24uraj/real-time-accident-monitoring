@@ -1,0 +1,17 @@
+{
+  "timestamp": "YYYY-MM-DDTHH:MM:SS",
+  "status": "NORMAL",
+  "severity": null,
+  "score": 0.0,
+  "ax": 0.0,
+  "ay": 0.0,
+  "az": 1.0,
+  "impact": 0.0,
+  "motion_level": 0,
+  "lat": 0.0,
+  "lon": 0.0,
+  "maps_url": "",
+  "vision": {},
+  "weather": {},
+  "device_state": "NORMAL"
+}

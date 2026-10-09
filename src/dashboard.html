@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Accident Monitoring Dashboard</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: #121b2f;
+      --muted: #9fb0d3;
+      --text: #ecf2ff;
+      --ok: #23c16b;
+      --warn: #f2b84a;
+      --danger: #ff5d6c;
+      --line: #283554;
+      --accent: #50c8ff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(1200px 600px at -10% -10%, #1a2e58 0%, transparent 55%),
+        radial-gradient(900px 500px at 110% 0%, #15304e 0%, transparent 55%),
+        var(--bg);
+    }
+    .wrap {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 24px 16px 32px;
+    }
+    .title {
+      font-size: 30px;
+      font-weight: 800;
+      letter-spacing: 0.4px;
+      margin: 0 0 6px;
+    }
+    .sub {
+      margin: 0 0 24px;
+      color: var(--muted);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 14px;
+    }
+    .card {
+      background: linear-gradient(180deg, #121b2f 0%, #10182a 100%);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    }
+    .card h3 {
+      margin: 0 0 8px;
+      font-size: 14px;
+      color: var(--muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+    .big {
+      font-size: 30px;
+      font-weight: 800;
+      margin: 0;
+    }
+    .span-4 { grid-column: span 4; }
+    .span-6 { grid-column: span 6; }
+    .span-8 { grid-column: span 8; }
+    .span-12 { grid-column: span 12; }
+    .kv {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      padding: 6px 0;
+      border-bottom: 1px dashed #233252;
+      color: #d7e4ff;
+    }
+    .kv:last-child { border-bottom: none; }
+    .pill {
+      display: inline-block;
+      padding: 7px 11px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 13px;
+    }
+    .ok { background: rgba(35, 193, 107, 0.2); color: var(--ok); }
+    .warn { background: rgba(242, 184, 74, 0.18); color: var(--warn); }
+    .danger { background: rgba(255, 93, 108, 0.2); color: var(--danger); }
+    .muted { color: var(--muted); }
+    a { color: var(--accent); text-decoration: none; }
+    @media (max-width: 840px) {
+      .span-4, .span-6, .span-8 { grid-column: span 12; }
+      .title { font-size: 24px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1 class="title">Real-Time Accident Monitoring</h1>
+    <p class="sub">Live ESP32 + Python + Vision demo dashboard</p>
+
+    <div class="grid">
+      <div class="card span-4">
+        <h3>System Status</h3>
+        <p id="status" class="big">--</p>
+        <p id="severity" class="pill ok">SEVERITY: --</p>
+      </div>
+
+      <div class="card span-4">
+        <h3>Risk Score</h3>
+        <p id="score" class="big">0.00</p>
+        <p class="muted">Derived from MPU6050 + weather + vision</p>
+      </div>
+
+      <div class="card span-4">
+        <h3>Last Update</h3>
+        <p id="timestamp" class="big" style="font-size:22px;">--</p>
+        <p id="state" class="muted">device_state: --</p>
+      </div>
+
+      <div class="card span-6">
+        <h3>Vision Model</h3>
+        <div class="kv"><span>Accident Probability</span><strong id="v_acc">0.00</strong></div>
+        <div class="kv"><span>Sequence Risk Probability</span><strong id="v_seq">0.00</strong></div>
+        <div class="kv"><span>Label</span><strong id="v_label">--</strong></div>
+      </div>
+
+      <div class="card span-6">
+        <h3>Weather</h3>
+        <div class="kv"><span>Rain</span><strong id="w_rain">0.00</strong></div>
+        <div class="kv"><span>Precipitation</span><strong id="w_precip">0.00</strong></div>
+        <div class="kv"><span>Wind Speed</span><strong id="w_wind">0.00</strong></div>
+        <div class="kv"><span>Visibility</span><strong id="w_vis">0</strong></div>
+      </div>
+
+      <div class="card span-6">
+        <h3>Location</h3>
+        <div class="kv"><span>Latitude</span><strong id="lat">0.000000</strong></div>
+        <div class="kv"><span>Longitude</span><strong id="lon">0.000000</strong></div>
+        <div class="kv"><span>Google Maps</span><strong><a id="maps" target="_blank" href="#">Open</a></strong></div>
+        <div style="margin-top:10px; border:1px solid #2b3c62; border-radius:10px; overflow:hidden;">
+          <iframe
+            id="mapFrame"
+            title="Live Location Map"
+            src="https://maps.google.com/maps?q=0,0&z=15&output=embed"
+            width="100%"
+            height="220"
+            style="border:0; display:block;"
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>
+      </div>
+
+      <div class="card span-6">
+        <h3>Accelerometer</h3>
+        <div class="kv"><span>X-axis</span><strong id="ax">0.000</strong></div>
+        <div class="kv"><span>Y-axis</span><strong id="ay">0.000</strong></div>
+        <div class="kv"><span>Z-axis</span><strong id="az">0.000</strong></div>
+        <div class="kv"><span>Impact</span><strong id="impact">0.000</strong></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function byId(id) { return document.getElementById(id); }
+    function setText(id, value) { byId(id).textContent = value; }
+    let lastMapLat = null;
+    let lastMapLon = null;
+
+    function updateStatusPill(status, severity) {
+      const el = byId("severity");
+      el.className = "pill";
+      if (status === "ACCIDENT DETECTED") el.classList.add("danger");
+      else if (status === "RISK WARNING") el.classList.add("warn");
+      else el.classList.add("ok");
+      el.textContent = "SEVERITY: " + (severity || "--");
+    }
+
+    function updateUI(data) {
+      const status = data.status || "--";
+      setText("status", status);
+      setText("score", Number(data.score || 0).toFixed(2));
+      setText("timestamp", data.timestamp || "--");
+      setText("state", "device_state: " + (data.device_state || "--"));
+
+      setText("ax", Number(data.ax || 0).toFixed(3));
+      setText("ay", Number(data.ay || 0).toFixed(3));
+      setText("az", Number(data.az || 0).toFixed(3));
+      setText("impact", Number(data.impact || 0).toFixed(3));
+
+      setText("lat", Number(data.lat || 0).toFixed(6));
+      setText("lon", Number(data.lon || 0).toFixed(6));
+      const mapsUrl = data.maps_url || "#";
+      byId("maps").href = mapsUrl;
+      const latNum = Number(data.lat || 0);
+      const lonNum = Number(data.lon || 0);
+      const lat = latNum.toFixed(6);
+      const lon = lonNum.toFixed(6);
+      const movedEnough =
+        lastMapLat === null ||
+        Math.abs(latNum - lastMapLat) > 0.0001 ||
+        Math.abs(lonNum - lastMapLon) > 0.0001;
+      if (movedEnough) {
+        byId("mapFrame").src = `https://maps.google.com/maps?q=${lat},${lon}&z=15&output=embed`;
+        lastMapLat = latNum;
+        lastMapLon = lonNum;
+      }
+
+      const v = data.vision || {};
+      setText("v_acc", Number(v.accident_prob || 0).toFixed(2));
+      setText("v_seq", Number(v.sequence_risk_prob || 0).toFixed(2));
+      setText("v_label", v.label || "--");
+
+      const w = data.weather || {};
+      setText("w_rain", Number(w.rain || 0).toFixed(2));
+      setText("w_precip", Number(w.precipitation || 0).toFixed(2));
+      setText("w_wind", Number(w.wind || 0).toFixed(2));
+      setText("w_vis", Number(w.visibility || 0).toFixed(0));
+
+      updateStatusPill(status, data.severity);
+    }
+
+    async function poll() {
+      try {
+        const res = await fetch("live_state.json?t=" + Date.now(), { cache: "no-store" });
+        if (!res.ok) return;
+        const data = await res.json();
+        updateUI(data);
+      } catch (e) {}
+    }
+
+    poll();
+    setInterval(poll, 1000);
+  </script>
+</body>
+</html>

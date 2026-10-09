@@ -1,0 +1,6 @@
+{
+  "accident_prob": 0.1,
+  "sequence_risk_prob": 0.2,
+  "label": "non_accident",
+  "updated_at": "YYYY-MM-DDTHH:MM:SS"
+}
